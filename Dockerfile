@@ -8,11 +8,11 @@ WORKDIR /app
 RUN addgroup --system clockify-reports && \
     adduser --system -G clockify-reports clockify-reports
 
-COPY dist/clockify-reports clockify-reports
+COPY .yarn .yarn
+COPY .yarnrc.yml .yarnrc.yml
+COPY dist/clockify-reports .
 RUN chown -R clockify-reports:clockify-reports .
 
-# You can remove this install step if you build with `--bundle` option.
-# The bundled output will include external dependencies.
-RUN npm --prefix clockify-reports --omit=dev -f install
+RUN yarn install
 
 CMD [ "node", "main.js" ]
