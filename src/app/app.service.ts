@@ -15,10 +15,12 @@ import { Workbook, WorksheetModel } from 'exceljs';
 import { env } from 'process';
 import { stringify } from 'qs';
 
-export class DateQuery {
+export class SimpleDate {
   year: number;
   month: number;
 }
+
+export type SimpleDateOrTag = SimpleDate | 'current' | 'last';
 
 @Injectable()
 export class AppService {
@@ -28,8 +30,11 @@ export class AppService {
 
   constructor(private readonly mailerService: MailerService) {}
 
-  public async generateReport(date?: DateQuery): Promise<Buffer> {
+  public async generateReport(
+    dateOrTag: SimpleDateOrTag
+  ): Promise<{ report: Buffer; date: SimpleDate }> {
     try {
+      const date = this.getDateDetails(dateOrTag);
       const [summaryData, users] = await Promise.all([
         this.getXlsxReport(
           {
@@ -81,9 +86,14 @@ export class AppService {
         worksheet.name = name;
       }
 
-      return result.xlsx.writeBuffer({
+      const report = (await result.xlsx.writeBuffer({
         zip: { compression: 'DEFLATE' },
-      }) as Promise<Buffer>;
+      })) as Buffer;
+
+      return {
+        report,
+        date,
+      };
     } catch (e) {
       this.#logger.error(e);
     }
@@ -91,8 +101,8 @@ export class AppService {
 
   @Cron(env.EMAIL_SCHEDULE)
   async sendMonthlyReport(): Promise<void> {
-    const { month, year } = this.lastMonthDetails();
-    const report = await this.generateReport();
+    const { report, date } = await this.generateReport('last');
+    const { year, month } = date;
     return this.mailerService.sendMail({
       to: env.EMAIL_TO.split(','),
       subject: `${env.EMAIL_SUBJECT} ${month + 1}/${year}`,
@@ -115,7 +125,7 @@ export class AppService {
       | 'amountShown'
       | 'sortOrder'
     >,
-    date?: DateQuery
+    date: SimpleDate
   ): Promise<Buffer> {
     const { data } = await this.#workspace.reports.summary._api.post(
       this.#workspace.reports.summary.resourceSubPath(),
@@ -137,18 +147,11 @@ export class AppService {
     return temp.getWorksheet(1).model;
   }
 
-  /**
-   * If date is not provided, it will use the previous month.
-   */
-  private getMonthRange(date?: DateQuery): {
+  private getMonthRange(date: SimpleDate): {
     dateRangeStart: Date;
     dateRangeEnd: Date;
   } {
-    let { year, month } = this.lastMonthDetails();
-    if (date) {
-      year = date.year;
-      month = date.month;
-    }
+    const { year, month } = date;
     const dateRangeStart = new Date(Date.UTC(year, month, 1, 0, 0));
     const dateRangeEnd = new Date(Date.UTC(year, month + 1, 0, 23, 59));
     return { dateRangeStart, dateRangeEnd };
@@ -162,15 +165,20 @@ export class AppService {
     });
   }
 
-  private lastMonthDetails(): DateQuery {
+  private getDateDetails(date?: SimpleDate | 'current' | 'last'): SimpleDate {
+    if (typeof date !== 'string') {
+      return date;
+    }
     const today = new Date(Date.now());
     let year = today.getFullYear();
     let month = today.getMonth();
-    if (month === 0) {
-      year -= 1;
-      month = 11;
-    } else {
-      month -= 1;
+    if (date === 'last') {
+      if (month === 0) {
+        year -= 1;
+        month = 11;
+      } else {
+        month -= 1;
+      }
     }
     return { year, month };
   }

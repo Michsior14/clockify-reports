@@ -1,20 +1,21 @@
 import { Controller, Get, Param, StreamableFile } from '@nestjs/common';
-import { AppService, DateQuery } from './app.service';
+import { AppService, SimpleDate } from './app.service';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get('report/:month/:year')
+  @Get('report/:month?/:year?')
   public async generateReport(
-    @Param() date: DateQuery
+    @Param() params: SimpleDate
   ): Promise<StreamableFile> {
-    const buffer = await this.appService.generateReport({
-      year: Number(date.year),
-      month: Number(date.month) - 1,
-    });
-    return new StreamableFile(buffer, {
-      disposition: `attachment; filename=report-${date.month}-${date.year}.xlsx`,
+    const { report, date } = await this.appService.generateReport(
+      params.month && params.year ? params : 'current'
+    );
+    return new StreamableFile(report, {
+      disposition: `attachment; filename=report-${date.month + 1}-${
+        date.year
+      }.xlsx`,
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
   }
