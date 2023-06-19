@@ -1,16 +1,11 @@
-import { Controller, Get, Header, Param, StreamableFile } from '@nestjs/common';
+import { Controller, Get, Param, StreamableFile } from '@nestjs/common';
 import { AppService, DateQuery } from './app.service';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get('report/:year/:month')
-  @Header(
-    'Content-Type',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  )
-  @Header('Content-Disposition', 'attachment; filename=summary.xlsx')
+  @Get('report/:month/:year')
   public async generateReport(
     @Param() date: DateQuery
   ): Promise<StreamableFile> {
@@ -18,13 +13,15 @@ export class AppController {
       year: Number(date.year),
       month: Number(date.month) - 1,
     });
-    return new StreamableFile(buffer);
+    return new StreamableFile(buffer, {
+      disposition: `attachment; filename=report-${date.month}-${date.year}.xlsx`,
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
   }
 
   @Get('send-last-month-report')
   public async generateReportForLastMonth(): Promise<{ message: string }> {
     try {
-      console.log(process.env);
       await this.appService.sendMonthlyReport();
       return { message: 'Report sent' };
     } catch (error) {

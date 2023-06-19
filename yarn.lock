@@ -1519,6 +1519,7 @@ __metadata:
     "@nestjs-modules/mailer": ^1.8.1
     "@nestjs/common": ^10.0.2
     "@nestjs/core": ^10.0.2
+    "@nestjs/passport": ^10.0.0
     "@nestjs/platform-express": ^10.0.2
     "@nestjs/schedule": ^3.0.1
     "@nestjs/schematics": ^10.0.1
@@ -1535,6 +1536,7 @@ __metadata:
     "@types/jest": ^29.5.2
     "@types/node": ~18.7.23
     "@types/nodemailer": ^6.4.8
+    "@types/passport-http": ^0.3.9
     "@typescript-eslint/eslint-plugin": ^5.59.11
     "@typescript-eslint/parser": ^5.59.11
     axios: ^1.4.0
@@ -1546,6 +1548,8 @@ __metadata:
     jest-environment-node: ^29.5.0
     nodemailer: ^6.9.3
     nx: 16.3.2
+    passport: ^0.6.0
+    passport-http: ^0.3.0
     prettier: ^2.8.8
     reflect-metadata: ^0.1.13
     rxjs: ^7.8.1
@@ -2105,6 +2109,16 @@ __metadata:
     "@nestjs/websockets":
       optional: true
   checksum: 4a1c5b5c8cfe341cf1a6703b2666c3d4fdd5d2fdbba26cddcef3d62287132fbd8c844c5dc9c710da21a39b769b8b45f08a052629cdb5e4be5c9d26542b4c2335
+  languageName: node
+  linkType: hard
+
+"@nestjs/passport@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "@nestjs/passport@npm:10.0.0"
+  peerDependencies:
+    "@nestjs/common": ^8.0.0 || ^9.0.0 || ^10.0.0
+    passport: ^0.4.0 || ^0.5.0 || ^0.6.0
+  checksum: c29839fa53449dfecbbf164b09232bb822e91ba82e82dacf539d6881cbb3e9aff8419fe2acf4084a68b5adb3c50fdee4c4089f5e58f79011d2b4291fee56df1d
   languageName: node
   linkType: hard
 
@@ -2994,6 +3008,25 @@ __metadata:
   version: 4.0.0
   resolution: "@types/parse-json@npm:4.0.0"
   checksum: 1d3012ab2fcdad1ba313e1d065b737578f6506c8958e2a7a5bdbdef517c7e930796cb1599ee067d5dee942fb3a764df64b5eef7e9ae98548d776e86dcffba985
+  languageName: node
+  linkType: hard
+
+"@types/passport-http@npm:^0.3.9":
+  version: 0.3.9
+  resolution: "@types/passport-http@npm:0.3.9"
+  dependencies:
+    "@types/express": "*"
+    "@types/passport": "*"
+  checksum: eadaa5c82acc0b67990933d451d4e483be8e8eb716018ba3a8134ce3d529f2d13df8e523d31f736ca42770c7969123e196c1fc4d150465327d34def4a018e606
+  languageName: node
+  linkType: hard
+
+"@types/passport@npm:*":
+  version: 1.0.12
+  resolution: "@types/passport@npm:1.0.12"
+  dependencies:
+    "@types/express": "*"
+  checksum: b825ee5e7b67f84b760e3fe0d2d06079fedbf49ef35bd4334a879f9b7f0b2c2d27829f6c89fdc3c768616e66da8850a5855b2afdd2e641927e9ce6454ae26480
   languageName: node
   linkType: hard
 
@@ -9968,6 +10001,33 @@ __metadata:
   languageName: node
   linkType: hard
 
+"passport-http@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "passport-http@npm:0.3.0"
+  dependencies:
+    passport-strategy: 1.x.x
+  checksum: 08a33d7474e6420137715333161858680bc3c79537e3851165adf6b8fd0c93ec5bb3af5cb34b8ad64541b7833d60f25fcf325b9dd2f6bf9882a33b7a588cd747
+  languageName: node
+  linkType: hard
+
+"passport-strategy@npm:1.x.x":
+  version: 1.0.0
+  resolution: "passport-strategy@npm:1.0.0"
+  checksum: cf4cd32e1bf2538a239651581292fbb91ccc83973cde47089f00d2014c24bed63d3e65af21da8ddef649a8896e089eb9c3ac9ca639f36c797654ae9ee4ed65e1
+  languageName: node
+  linkType: hard
+
+"passport@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "passport@npm:0.6.0"
+  dependencies:
+    passport-strategy: 1.x.x
+    pause: 0.0.1
+    utils-merge: ^1.0.1
+  checksum: 1d8651a4a1a72b84ea08c498cff9cfc209aebfe18baed4cf93292ded3f8e30a04e30b404fdfce39dfb6aa7247e205f1df43fbfd7bc7c1a67a600884359d46ee6
+  languageName: node
+  linkType: hard
+
 "path-exists@npm:^4.0.0":
   version: 4.0.0
   resolution: "path-exists@npm:4.0.0"
@@ -10024,6 +10084,13 @@ __metadata:
   version: 4.0.0
   resolution: "path-type@npm:4.0.0"
   checksum: 666f6973f332f27581371efaf303fd6c272cc43c2057b37aa99e3643158c7e4b2626549555d88626e99ea9e046f82f32e41bbde5f1508547e9a11b149b52387c
+  languageName: node
+  linkType: hard
+
+"pause@npm:0.0.1":
+  version: 0.0.1
+  resolution: "pause@npm:0.0.1"
+  checksum: f362655dfa7f44b946302c5a033148852ed5d05f744bd848b1c7eae6a543f743e79c7751ee896ba519fd802affdf239a358bb2ea5ca1b1c1e4e916279f83ab75
   languageName: node
   linkType: hard
 
@@ -12500,7 +12567,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"utils-merge@npm:1.0.1":
+"utils-merge@npm:1.0.1, utils-merge@npm:^1.0.1":
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: 02ba649de1b7ca8854bfe20a82f1dfbdda3fb57a22ab4a8972a63a34553cf7aa51bc9081cf7e001b035b88186d23689d69e71b510e610a09a4c66f68aa95b672

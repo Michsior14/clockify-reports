@@ -16,6 +16,13 @@ node_modules
 *.launch
 .settings/
 *.sublime-workspace
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
 
 # IDE - VSCode
 .vscode/*
