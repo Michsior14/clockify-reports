@@ -1,6 +1,6 @@
 import { MailerModule } from '@nestjs-modules/mailer';
-import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { Module, ValidationPipe } from '@nestjs/common';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { env } from 'process';
 import { AppController } from './app.controller';
@@ -33,6 +33,17 @@ import { BasicAuthGuard } from './auth/local-auth.guard';
     {
       provide: APP_GUARD,
       useClass: BasicAuthGuard,
+    },
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({
+        transform: true,
+        transformOptions: {
+          enableImplicitConversion: true,
+        },
+        whitelist: true,
+        forbidUnknownValues: true,
+      }),
     },
   ],
 })

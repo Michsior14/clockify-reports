@@ -10,7 +10,9 @@ export class AppController {
     @Param() params: SimpleDate
   ): Promise<StreamableFile> {
     const { report, date } = await this.appService.generateReport(
-      params.month && params.year ? params : 'current'
+      params.month && params.year
+        ? { ...params, month: params.month - 1 }
+        : 'current'
     );
     return new StreamableFile(report, {
       disposition: `attachment; filename=report-${date.month + 1}-${

@@ -5,10 +5,6 @@ import { env } from 'process';
 
 @Injectable()
 export class BasicStrategy extends PassportStrategy(Strategy) {
-  constructor() {
-    super({ realm: 'clockify-report' });
-  }
-
   async validate(username: string, password: string): Promise<object> {
     if (username !== env.ACCESS_USERNAME || password !== env.ACCESS_PASSWORD) {
       throw new UnauthorizedException();

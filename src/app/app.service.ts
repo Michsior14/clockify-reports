@@ -1,6 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import { IsNumber, IsOptional } from 'class-validator';
 import Clockify, {
   RequestSummaryReportAmountShownEnum,
   RequestSummaryReportContainsFilterEnum,
@@ -16,7 +17,11 @@ import { env } from 'process';
 import { stringify } from 'qs';
 
 export class SimpleDate {
+  @IsNumber()
+  @IsOptional()
   year: number;
+  @IsNumber()
+  @IsOptional()
   month: number;
 }
 
