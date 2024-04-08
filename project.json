@@ -3,6 +3,7 @@
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "src",
   "projectType": "application",
+  "tags": [],
   "targets": {
     "build": {
       "executor": "@nx/webpack:webpack",
@@ -15,7 +16,6 @@
         "main": "src/main.ts",
         "tsConfig": "tsconfig.app.json",
         "assets": ["src/assets"],
-        "isolatedConfig": true,
         "generatePackageJson": true,
         "webpackConfig": "webpack.config.js"
       },
@@ -40,30 +40,21 @@
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": ["{options.outputFile}"],
+      "executor": "@nx/eslint:lint",
       "options": {
-        "lintFilePatterns": ["./src/**/*.ts"]
+        "lintFilePatterns": ["src", "{projectRoot}/src/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectName}"],
       "options": {
-        "jestConfig": "jest.config.ts",
-        "passWithNoTests": true
-      },
-      "configurations": {
-        "ci": {
-          "ci": true,
-          "codeCoverage": true
-        }
+        "jestConfig": "jest.config.ts"
       }
     },
     "docker-build": {
       "dependsOn": ["build"],
       "command": "docker build -f Dockerfile . -t clockify-reports"
     }
-  },
-  "tags": []
+  }
 }
