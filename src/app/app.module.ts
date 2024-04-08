@@ -1,5 +1,5 @@
 import { MailerModule } from '@nestjs-modules/mailer';
-import { Module, ValidationPipe } from '@nestjs/common';
+import { ConsoleLogger, Module, ValidationPipe } from '@nestjs/common';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { env } from 'process';
@@ -30,6 +30,7 @@ import { BasicAuthGuard } from './auth/local-auth.guard';
   controllers: [AppController],
   providers: [
     AppService,
+    ConsoleLogger,
     {
       provide: APP_GUARD,
       useClass: BasicAuthGuard,

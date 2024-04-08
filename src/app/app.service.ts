@@ -36,7 +36,7 @@ export class AppService {
   constructor(private readonly mailerService: MailerService) {}
 
   public async generateReport(
-    dateOrTag: SimpleDateOrTag
+    dateOrTag: SimpleDateOrTag,
   ): Promise<{ report: Buffer; date: SimpleDate }> {
     try {
       const date = this.getDateDetails(dateOrTag);
@@ -48,36 +48,54 @@ export class AppService {
               sortColumn: RequestSummaryReportSortColumnEnum.group,
             },
           },
-          date
+          date,
         ),
         this.#workspace.users.get({}),
       ]);
 
-      const userWorksheets = await Promise.all(
-        users.map(async (user) => ({
-          name: `${user.name}`,
-          model: await this.getWorksheetModel(
-            await this.getXlsxReport(
-              {
-                users: {
-                  ids: [user.id],
-                  contains: RequestSummaryReportContainsFilterEnum.contains,
-                  status: RequestSummaryReportUserStatusFilterEnum.all,
-                },
-                summaryFilter: {
-                  groups: [
-                    RequestSummaryReportGroupsEnum.date,
-                    RequestSummaryReportGroupsEnum.project,
-                    RequestSummaryReportGroupsEnum.timeEntry,
-                  ],
-                  sortColumn: RequestSummaryReportSortColumnEnum.group,
-                },
+      this.#logger.log('Summary and users downloaded');
+
+      const userWorksheets: { name: string; model: WorksheetModel }[] = [];
+
+      for (const user of users) {
+        try {
+          const report = await this.getXlsxReport(
+            {
+              users: {
+                ids: [user.id],
+                contains: RequestSummaryReportContainsFilterEnum.contains,
+                status: RequestSummaryReportUserStatusFilterEnum.all,
               },
-              date
-            )
-          ),
-        }))
-      );
+              summaryFilter: {
+                groups: [
+                  RequestSummaryReportGroupsEnum.date,
+                  RequestSummaryReportGroupsEnum.project,
+                  RequestSummaryReportGroupsEnum.timeEntry,
+                ],
+                sortColumn: RequestSummaryReportSortColumnEnum.group,
+              },
+            },
+            date,
+          );
+          this.#logger.log(`${user.name}: report downloaded`);
+
+          const model = await this.getWorksheetModel(report);
+          this.#logger.log(`${user.name}: worksheet model created`);
+
+          userWorksheets.push({
+            name: `${user.name}`,
+            model,
+          });
+
+          // Sleep to avoid rate limiting
+          await this.sleep(300);
+        } catch (e) {
+          this.#logger.error(`${user.name}: Error during model generation`, e);
+          throw e;
+        }
+      }
+
+      this.#logger.log('All user reports created');
 
       const worksheetsToWrite = [
         { name: 'Summary', model: await this.getWorksheetModel(summaryData) },
@@ -95,30 +113,39 @@ export class AppService {
         zip: { compression: 'DEFLATE' },
       })) as Buffer;
 
+      this.#logger.log('Report created');
+
       return {
         report,
         date,
       };
     } catch (e) {
       this.#logger.error(e);
+      throw e;
     }
   }
 
   @Cron(env.EMAIL_SCHEDULE)
   async sendMonthlyReport(): Promise<void> {
-    const { report, date } = await this.generateReport('last');
-    const { year, month } = date;
-    return this.mailerService.sendMail({
-      to: env.EMAIL_TO.split(','),
-      subject: `${env.EMAIL_SUBJECT} ${month + 1}/${year}`,
-      text: env.EMAIL_BODY,
-      attachments: [
-        {
-          filename: `clockify-report-${month + 1}-${year}.xlsx`,
-          content: report,
-        },
-      ],
-    });
+    try {
+      const { report, date } = await this.generateReport('last');
+      const { year, month } = date;
+      await this.mailerService.sendMail({
+        to: env.EMAIL_TO.split(','),
+        subject: `${env.EMAIL_SUBJECT} ${month + 1}/${year}`,
+        text: env.EMAIL_BODY,
+        attachments: [
+          {
+            filename: `clockify-report-${month + 1}-${year}.xlsx`,
+            content: report,
+          },
+        ],
+      });
+      this.#logger.log('Report sent');
+    } catch (e) {
+      this.#logger.error(e);
+      throw e;
+    }
   }
 
   private async getXlsxReport(
@@ -130,7 +157,7 @@ export class AppService {
       | 'amountShown'
       | 'sortOrder'
     >,
-    date: SimpleDate
+    date: SimpleDate,
   ): Promise<Buffer> {
     const { data } = await this.#workspace.reports.summary._api.post(
       this.#workspace.reports.summary.resourceSubPath(),
@@ -141,7 +168,7 @@ export class AppService {
         amountShown: RequestSummaryReportAmountShownEnum.hideAmount,
         exportType: RequestSummaryReportExportTypeEnum.xlsx,
       },
-      { responseType: 'arraybuffer', paramsSerializer: this.paramsSerializer }
+      { responseType: 'arraybuffer', paramsSerializer: this.paramsSerializer },
     );
     return data;
   }
@@ -186,5 +213,9 @@ export class AppService {
       }
     }
     return { year, month };
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
